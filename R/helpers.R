@@ -59,7 +59,7 @@ createCohorts <- function(connectionDetails,
   # Check number of subjects per cohort:
   ParallelLogger::logInfo("Counting cohorts")
   sql <- SqlRender::loadRenderTranslateSql("GetCounts.sql",
-                                           "covidDeath",
+                                           "CovidDeath",
                                            dbms = connectionDetails$dbms,
                                            oracleTempSchema = oracleTempSchema,
                                            cdm_database_schema = cdmDatabaseSchema,
@@ -74,7 +74,7 @@ createCohorts <- function(connectionDetails,
 }
 
 addCohortNames <- function(data, IdColumnName = "cohortDefinitionId", nameColumnName = "cohortName") {
-  pathToCsv <- system.file("settings", "CohortsToCreate.csv", package = "covidDeath")
+  pathToCsv <- system.file("settings", "CohortsToCreate.csv", package = "CovidDeath")
   cohortsToCreate <- utils::read.csv(pathToCsv)
 
   idToName <- data.frame(cohortId = c(cohortsToCreate$cohortId),
@@ -102,7 +102,7 @@ addCohortNames <- function(data, IdColumnName = "cohortDefinitionId", nameColumn
 
   # Create study cohort table structure:
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "CreateCohortTable.sql",
-                                           packageName = "covidDeath",
+                                           packageName = "CovidDeath",
                                            dbms = attr(connection, "dbms"),
                                            oracleTempSchema = oracleTempSchema,
                                            cohort_database_schema = cohortDatabaseSchema,
@@ -112,12 +112,12 @@ addCohortNames <- function(data, IdColumnName = "cohortDefinitionId", nameColumn
 
 
   # Instantiate cohorts:
-  pathToCsv <- system.file("settings", "CohortsToCreate.csv", package = "covidDeath")
+  pathToCsv <- system.file("settings", "CohortsToCreate.csv", package = "CovidDeath")
   cohortsToCreate <- utils::read.csv(pathToCsv)
   for (i in 1:nrow(cohortsToCreate)) {
     writeLines(paste("Creating cohort:", cohortsToCreate$name[i]))
     sql <- SqlRender::loadRenderTranslateSql(sqlFilename = paste0(cohortsToCreate$name[i], ".sql"),
-                                             packageName = "covidDeath",
+                                             packageName = "CovidDeath",
                                              dbms = attr(connection, "dbms"),
                                              oracleTempSchema = oracleTempSchema,
                                              cdm_database_schema = cdmDatabaseSchema,
@@ -130,7 +130,7 @@ addCohortNames <- function(data, IdColumnName = "cohortDefinitionId", nameColumn
   }
 
 
-  pathToCustom <- system.file("settings", 'cohortVariableSetting.csv', package = "covidDeath")
+  pathToCustom <- system.file("settings", 'cohortVariableSetting.csv', package = "CovidDeath")
   if(pathToCustom!=""){
     # if custom cohort covaraites set:
     cohortVarsToCreate <- utils::read.csv(pathToCustom)
@@ -143,7 +143,7 @@ addCohortNames <- function(data, IdColumnName = "cohortDefinitionId", nameColumn
     for (i in 1:nrow(cohortVarsToCreate)) {
       writeLines(paste("Creating cohort:", cohortVarsToCreate$cohortName[i]))
       sql <- SqlRender::loadRenderTranslateSql(sqlFilename = paste0(cohortVarsToCreate$cohortName[i], ".sql"),
-                                               packageName = "covidDeath",
+                                               packageName = "CovidDeath",
                                                dbms = attr(connection, "dbms"),
                                                oracleTempSchema = oracleTempSchema,
                                                cdm_database_schema = cdmDatabaseSchema,
