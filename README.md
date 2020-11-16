@@ -15,7 +15,7 @@ Predicting death due to COVID-19
 - Results explorer: **[Shiny App](https://data.ohdsi.org/CovidDeathPrediction/)**
 
 
-A study to demonstrate the complete OHDSI process for developing well tested prognostic models.  In this study we focus on developing and validating models to predict death within 30 days of hospitalization due to COVID-19.
+A study to demonstrate the complete OHDSI process for developing well tested prognostic models.  In this study we focus on validating models that predict death within 30 days of hospitalization due to COVID-19.
 
 Suggested Requirements
 ===================
@@ -71,26 +71,23 @@ cohortDatabaseSchema <- 'work database schema'
 oracleTempSchema <- NULL
 
 # table name where the cohorts will be generated
-cohortTable <- 'covidDeathCohort'
+cohortTable <- 'covidDeathValidationCohort'
 #=======================
-
 execute(connectionDetails = connectionDetails,
-        cdmDatabaseSchema = cdmDatabaseSchema,
-		cdmDatabaseName = cdmDatabaseName,
-        cohortDatabaseSchema = cohortDatabaseSchema,
-        cohortTable = cohortTable,
-        oracleTempSchema = oracleTempSchema,
-        outputFolder = outputFolder,
-        createProtocol = F,
-        createCohorts = T,
-        runAnalyses = T,
-        createResultsDoc = F,
-        packageResults = F,
-        createValidationPackage = F,
-        minCellCount= 5)
+                                 databaseName = cdmDatabaseName,
+                                 cdmDatabaseSchema = cdmDatabaseSchema,
+                                 cohortDatabaseSchema = cohortDatabaseSchema,
+                                 oracleTempSchema = oracleTempSchema,
+                                 cohortTable = cohortTable,
+                                 outputFolder = outputFolder,
+                                 createCohorts = T,
+                                 runValidation = T,
+                                 packageResults = F,
+                                 minCellCount = 5,
+                                 sampleSize = NULL)
 ```
 
-The 'createCohorts' option will create the target and outcome cohorts into cohortDatabaseSchema.cohortTable if set to T.  The 'runAnalyses' option will create/extract the data for each prediction problem setting (each Analysis), develop a prediction model, internally validate it if set to T.  The results of each Analysis are saved in the 'outputFolder' directory under the subdirectories 'Analysis_1' to 'Analysis_N', where N is the total analyses specified.  After running execute with 'runAnalyses set to T, a 'Validation' subdirectory will be created in the 'outputFolder' directory where you can add the external validation results to make them viewable in the shiny app or journal document that can be automatically generated.
+The 'createCohorts' option will create the target and outcome cohorts into cohortDatabaseSchema.cohortTable if set to T.  The 'runAnalyses' option will create/extract the data for each prediction problem setting (each Analysis) and externally validate it if set to T.
 
 
 

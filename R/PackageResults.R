@@ -1,6 +1,6 @@
 # Copyright 2018 Observational Health Data Sciences and Informatics
 #
-# This file is part of covidDeath
+# This file is part of PredictionNetworkStudySkeleton
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,65 +19,64 @@
 #' @details
 #' This function packages the results.
 #'
-#' @param outputFolder        Name of folder containing the study analysis results 
+#' @param outputFolder        Name of local folder to place results; make sure to use forward slashes
 #'                            (/)
 #' @param minCellCount        The minimum number of subjects contributing to a count before it can be included in the results.
 #'
 #' @export
-packageResults <- function(outputFolder, 
+packageResults <- function(outputFolder,
                            minCellCount = 5) {
   if(missing(outputFolder)){
     stop('Missing outputFolder...')
   }
-  
+
   # for each analysis copy the requested files...
-  folders <- list.dirs(path = outputFolder, recursive = F, full.names = F)
+  folders <- list.dirs(path = outputFolder, recursive = T, full.names = F)
   folders <- folders[grep('Analysis_', folders)]
-  
+  if(length(grep('inst/plp_models', folders))>0){
+    folders <- folders[-grep('inst/plp_models', folders)] #in case using package directory
+  }
+
+  if(length(folders)==0){
+    stop('No results to export...')
+    }
+
   #create export subfolder in workFolder
   exportFolder <- file.path(outputFolder, "export")
-  dir.create(exportFolder, recursive = T)
-  
+
   for(folder in folders){
     #copy all plots across
     if (!file.exists(file.path(exportFolder,folder))){
       dir.create(file.path(exportFolder,folder), recursive = T)
     }
-    
+
     # loads analysis results
-    if(dir.exists(file.path(outputFolder,folder, 'plpResult'))){
-      plpResult <- PatientLevelPrediction::loadPlpResult(file.path(outputFolder,folder, 'plpResult'))
-      
-      if(minCellCount!=0){
-        PatientLevelPrediction::transportPlp(plpResult,
-                                             outputFolder=file.path(exportFolder,folder, 'plpResult'), 
-                                             n=minCellCount,
-                                             includeEvaluationStatistics=T,
-                                             includeThresholdSummary=T, 
-                                             includeDemographicSummary=T,
-                                             includeCalibrationSummary =T, 
-                                             includePredictionDistribution=T,
-                                             includeCovariateSummary=T)
-      } else {
-        PatientLevelPrediction::transportPlp(plpResult,outputFolder=file.path(exportFolder,folder, 'plpResult'), 
-                                             n=NULL,
-                                             includeEvaluationStatistics=T,
-                                             includeThresholdSummary=T, 
-                                             includeDemographicSummary=T,
-                                             includeCalibrationSummary =T, 
-                                             includePredictionDistribution=T,
-                                             includeCovariateSummary=T)
+    if(file.exists(file.path(outputFolder,folder, 'validationResult.rds'))){
+      plpResult <- readRDS(file.path(outputFolder,folder, 'validationResult.rds'))
+
+      if(minCellCount==0){
+        minCellCount <- NULL
       }
+      result <- PatientLevelPrediction::transportPlp(plpResult, save = F,
+                                                     n=minCellCount,
+                                                     includeEvaluationStatistics=T,
+                                                     includeThresholdSummary=T,
+                                                     includeDemographicSummary=T,
+                                                     includeCalibrationSummary =T,
+                                                     includePredictionDistribution=T,
+                                                     includeCovariateSummary=T)
+      saveRDS(result, file.path(exportFolder,folder, 'validationResult.rds'))
+
     }
   }
-  
-  
+
+
   ### Add all to zip file ###
   zipName <- paste0(outputFolder, '.zip')
   OhdsiSharing::compressFolder(exportFolder, zipName)
   # delete temp folder
   unlink(exportFolder, recursive = T)
-  
+
   writeLines(paste("\nStudy results are compressed and ready for sharing at:", zipName))
   return(zipName)
 }
