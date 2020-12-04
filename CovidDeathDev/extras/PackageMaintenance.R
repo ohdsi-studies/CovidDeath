@@ -1,6 +1,6 @@
 # Copyright 2018 Observational Health Data Sciences and Informatics
 #
-# This file is part of covidDeathValidation
+# This file is part of SkeletonCompartiveEffectStudy
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,32 +16,32 @@
 
 # Format and check code ---------------------------------------------------
 OhdsiRTools::formatRFolder()
-OhdsiRTools::checkUsagePackage("covidDeathValidation")
+OhdsiRTools::checkUsagePackage("covidDeath")
 OhdsiRTools::updateCopyrightYearFolder()
 
 # Create manual -----------------------------------------------------------
-shell("rm extras/covidDeathValidation.pdf")
-shell("R CMD Rd2pdf ./ --output=extras/covidDeathValidation.pdf")
+shell("rm extras/covidDeath.pdf")
+shell("R CMD Rd2pdf ./ --output=extras/covidDeath.pdf")
 
 # Create vignette ---------------------------------------------------------
-rmarkdown::render("vignettes/UsingSkeletonValidationPackage.Rmd",
-                  output_file = "../inst/doc/UsingSkeletonValidationPackage.pdf",
+rmarkdown::render("vignettes/UsingSkeletonPackage.Rmd",
+                  output_file = "../inst/doc/UsingSkeletonPackage.pdf",
                   rmarkdown::pdf_document(latex_engine = "pdflatex",
                                           toc = TRUE,
                                           number_sections = TRUE))
 
+# Create analysis details -------------------------------------------------
 # Insert cohort definitions from ATLAS into package -----------------------
 OhdsiRTools::insertCohortDefinitionSetInPackage(fileName = "CohortsToCreate.csv",
-                                                baseUrl = Sys.getenv("baseUrl"),
+                                                baseUrl = "webapi",
                                                 insertTableSql = TRUE,
                                                 insertCohortCreationR = TRUE,
                                                 generateStats = FALSE,
-                                                packageName = "covidDeathValidation")
+                                                packageName = "covidDeath")
 
-# transport the plp models -------------------------------------------------
-transportPlpModels(analysesDir= "modelFolder",
-                   minCellCount = 5,
-                   databaseName = 'sharable name of development data')
+# Create analysis details -------------------------------------------------
+source("extras/CreatePredictionAnalysisDetails.R")
+createAnalysesDetails("inst/settings")
 
 # Store environment in which the study was executed -----------------------
-OhdsiRTools::insertEnvironmentSnapshotInPackage("covidDeathValidation")
+OhdsiRTools::insertEnvironmentSnapshotInPackage("covidDeath")
